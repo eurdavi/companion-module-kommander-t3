@@ -1,4 +1,5 @@
 import { combineRgb } from '@companion-module/base'
+import { groupCount, planCount } from './actions.js'
 
 const WHITE = combineRgb(255, 255, 255)
 const CARD = combineRgb(35, 38, 45)
@@ -36,8 +37,9 @@ function feedback(feedbackId, options, bgcolor) {
 export function getPresetDefinitions(label, planGroups) {
 	const presets = {}
 
-	// Plan buttons are green while in preview and red while on air, like a switcher's tally
-	for (let n = 1; n <= 32; n++) {
+	// Plan buttons are green while in preview and red while on air, like a switcher's tally. As many as the biggest
+	// group of the open project has (at least 32)
+	for (let n = 1; n <= planCount(planGroups); n++) {
 		presets[`plan_${n}`] = button(
 			'Plans',
 			`Plan ${n}`,
@@ -45,6 +47,8 @@ export function getPresetDefinitions(label, planGroups) {
 			[action('callPlan', { callPlan: n })],
 			[feedback('previewPlan', { plan: n - 1 }, GREEN), feedback('plan', { plan: n - 1 }, RED)],
 		)
+	}
+	for (let n = 1; n <= groupCount(planGroups); n++) {
 		presets[`group_${n}`] = button(
 			'Groups',
 			`Group ${n}`,
@@ -53,6 +57,21 @@ export function getPresetDefinitions(label, planGroups) {
 			[feedback('preGroup', { preGroup: n - 1 }, BLUE)],
 		)
 	}
+
+	// A keypad to call any plan of the current group by its number, for more plans than buttons
+	for (const key of [...'1234567890']) {
+		presets[`keypad_${key}`] = button('Plan keypad', `Type ${key}`, key, [action('planKeypad', { key })])
+	}
+	presets.keypad_back = button('Plan keypad', 'Delete the last digit', 'DEL', [action('planKeypad', { key: 'back' })])
+	presets.keypad_clear = button('Plan keypad', 'Clear', 'CLEAR', [action('planKeypad', { key: 'clear' })])
+	presets.keypad_call = button(
+		'Plan keypad',
+		'Call the plan typed',
+		`CALL $(${label}:keypad_plan)\n$(${label}:keypad_plan_name)`,
+		[action('planKeypadCall')],
+		[],
+		AMBER,
+	)
 
 	presets.plan_previous = button('Navigation', 'Previous plan', '< PLAN', [
 		action('callPlan', { callPlan: 'PreviousPlan' }),
@@ -64,6 +83,12 @@ export function getPresetDefinitions(label, planGroups) {
 	presets.group_next = button('Navigation', 'Next group', 'GROUP >', [
 		action('ChangePlanGroup', { changePlanGroup: 'next' }),
 	])
+	presets.random_plan = button('Navigation', 'Random plan of the current group', 'RANDOM\nPLAN', [
+		action('randomPlan', { group: '', after: 'play' }),
+	])
+	for (let kv = 1; kv <= 3; kv++) {
+		presets[`main_kv_${kv}`] = button('Navigation', `Main KV ${kv}`, `KV ${kv}`, [action('mainKv', { kv })])
+	}
 
 	presets.play = button(
 		'Playback',
@@ -86,6 +111,10 @@ export function getPresetDefinitions(label, planGroups) {
 		[action('ChangePlayStatus', { changePlayStatus: 'Stop' })],
 		[feedback('playStatus', { playStatus: 2 }, RED)],
 	)
+	presets.replay = button('Playback', 'Replay from the start', 'REPLAY', [action('replay', { mode: 'replay' })])
+	presets.first_frame = button('Playback', 'Back to the first frame', 'FIRST\nFRAME', [
+		action('replay', { mode: 'firstframe' }),
+	])
 
 	presets.blackscreen = button(
 		'Screen',
@@ -144,6 +173,12 @@ export function getPresetDefinitions(label, planGroups) {
 
 	presets.page_up = button('Presentation', 'Page up', 'PAGE\nUP', [action('PageTurn', { pageTurn: 'PrevPage' })])
 	presets.page_down = button('Presentation', 'Page down', 'PAGE\nDOWN', [action('PageTurn', { pageTurn: 'NextPage' })])
+	presets.prompter_previous = button('Presentation', 'Teleprompter: previous', 'PROMPT\n<', [
+		action('turnPage', { type: 'teleprompter', mode: 'previous', page: 1, program: '' }),
+	])
+	presets.prompter_next = button('Presentation', 'Teleprompter: next', 'PROMPT\n>', [
+		action('turnPage', { type: 'teleprompter', mode: 'next', page: 1, program: '' }),
+	])
 
 	presets.preview_mode = button(
 		'Preview (PVW)',
@@ -169,12 +204,45 @@ export function getPresetDefinitions(label, planGroups) {
 	presets.status_play = button('Status', 'Play status', `$(${label}:play_status)`, [])
 	presets.status_video = button('Status', 'Video time left', `VIDEO\n$(${label}:video_remaining)`, [])
 	presets.status_volume = button('Status', 'Volume', `VOL\n$(${label}:volume)`, [])
+	presets.status_timeline = button('Status', 'Timeline progress', `TL\n$(${label}:timeline_progress)`, [])
+
+	// Red when Kommander reports a problem (central control)
+	presets.monitor_displays = button(
+		'Monitoring',
+		'Display ends',
+		`SCREENS\n$(${label}:display_status)`,
+		[],
+		[feedback('displayProblem', {}, RED)],
+	)
+	presets.monitor_outputs = button(
+		'Monitoring',
+		'Output ports',
+		`OUTPUTS\n$(${label}:output_ports_status)`,
+		[],
+		[feedback('outputProblem', {}, RED)],
+	)
+	presets.monitor_devices = button(
+		'Monitoring',
+		'Machines of a multi-machine setup',
+		`DEVICES\n$(${label}:devices_count)`,
+		[],
+		[feedback('deviceProblem', {}, RED)],
+	)
+	presets.schedule = button(
+		'Monitoring',
+		'Task management on/off',
+		'TASKS',
+		[action('schedule', { mode: 'toggle' })],
+		[feedback('schedule', {}, GREEN)],
+	)
 
 	for (let n = 1; n <= 32; n++) {
 		presets[`timeline_${n}`] = button('Timeline', `Timeline ${n} play/pause`, `TL ${n}`, [
 			action('CallTimeline', { CallTimeline: n, CallTimelineStatus: 1 }),
 		])
 	}
+	presets.standby_on = button('Timeline', 'Standby on', 'STANDBY\nON', [action('standby', { mode: 'on' })])
+	presets.standby_off = button('Timeline', 'Standby off', 'STANDBY\nOFF', [action('standby', { mode: 'off' })])
 
 	// One button per group and plan of the open project, once the media library has been loaded
 	planGroups.forEach((group, g) => {

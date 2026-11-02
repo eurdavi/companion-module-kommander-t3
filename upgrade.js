@@ -12,4 +12,16 @@ export const upgradeScripts = [
 			updatedFeedbacks: [],
 		}
 	},
+	// 1.1.0: central control (Kommander's text protocol) became a setting, on by default
+	function (_context, props) {
+		const config = props.config
+		if (!config || config.central_control !== undefined) {
+			return { updatedConfig: null, updatedActions: [], updatedFeedbacks: [] }
+		}
+		return {
+			updatedConfig: { ...config, central_control: true, central_port: 5001 },
+			updatedActions: [],
+			updatedFeedbacks: [],
+		}
+	},
 ]

@@ -1,11 +1,12 @@
 import { combineRgb } from '@companion-module/base'
-import { groupLabel } from './actions.js'
+import { groupCount, groupLabel, planCount } from './actions.js'
 
 // Buttons store feedback ids and options: those of the feedbacks from version 1.0 must not change
 const LEGACY_STYLE = { bgcolor: combineRgb(0, 0, 255), color: combineRgb(0, 0, 0) }
 const WHITE = combineRgb(255, 255, 255)
 const PREVIEW_STYLE = { bgcolor: combineRgb(19, 154, 69), color: WHITE }
 const RECORDING_STYLE = { bgcolor: combineRgb(225, 0, 30), color: WHITE }
+const PROBLEM_STYLE = RECORDING_STYLE
 
 const nameOptions = [
 	{ type: 'textinput', label: 'group name', id: 'groupName', default: '' },
@@ -17,10 +18,9 @@ const staticText = (id, value) => [{ type: 'static-text', label: value, id, valu
 export function getFeedbackDefinitions(self) {
 	const groupChoices = []
 	const planChoices = []
-	for (let i = 0; i < 32; i++) {
+	for (let i = 0; i < groupCount(self.planGroups); i++)
 		groupChoices.push({ id: i, label: groupLabel(self.planGroups, i) })
-		planChoices.push({ id: i, label: `Plan ${i + 1}` })
-	}
+	for (let i = 0; i < planCount(self.planGroups); i++) planChoices.push({ id: i, label: `Plan ${i + 1}` })
 	const planOption = { type: 'dropdown', label: 'select', id: 'plan', choices: planChoices, default: 0 }
 	const inPreview = () => self.realMode === false
 
@@ -132,6 +132,38 @@ export function getFeedbackDefinitions(self) {
 			defaultStyle: RECORDING_STYLE,
 			options: [],
 			callback: () => self.recording,
+		},
+		schedule: {
+			type: 'boolean',
+			name: 'Task management on',
+			description: "Kommander's task management (scheduled tasks) is on (central control)",
+			defaultStyle: PREVIEW_STYLE,
+			options: [],
+			callback: () => self.scheduleOn,
+		},
+		displayProblem: {
+			type: 'boolean',
+			name: 'Display problem',
+			description: 'A display end of Kommander reports a problem (central control heartbeat, Kommander 8.2.100+)',
+			defaultStyle: PROBLEM_STYLE,
+			options: [],
+			callback: () => self.displayProblem,
+		},
+		outputProblem: {
+			type: 'boolean',
+			name: 'Output problem',
+			description: 'An output port of Kommander is off (central control heartbeat, Kommander 8.2.100+)',
+			defaultStyle: PROBLEM_STYLE,
+			options: [],
+			callback: () => self.outputProblem,
+		},
+		deviceProblem: {
+			type: 'boolean',
+			name: 'Machine problem',
+			description: 'A machine of the multi-machine setup is not normal (central control, Kommander 8.2.99+)',
+			defaultStyle: PROBLEM_STYLE,
+			options: [],
+			callback: () => self.deviceProblem,
 		},
 	}
 }

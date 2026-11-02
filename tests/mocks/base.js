@@ -5,6 +5,7 @@ export const InstanceStatus = {
 	Disconnected: 'disconnected',
 	ConnectionFailure: 'connection_failure',
 	BadConfig: 'bad_config',
+	UnknownWarning: 'unknown_warning',
 }
 
 export function combineRgb(r, g, b) {

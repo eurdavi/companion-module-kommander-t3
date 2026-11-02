@@ -11,6 +11,8 @@ export function getVariableDefinitions() {
 		{ variableId: 'preview_plan_name', name: 'Name of the plan in preview' },
 		{ variableId: 'preview_group_number', name: 'Number of the group of the plan in preview' },
 		{ variableId: 'preview_group_name', name: 'Name of the group of the plan in preview' },
+		{ variableId: 'keypad_plan', name: 'Plan number typed on the plan keypad' },
+		{ variableId: 'keypad_plan_name', name: 'Name of that plan, in the current group' },
 		{ variableId: 'play_status', name: 'Play status (Play, Pause or Stop)' },
 		{ variableId: 'video_name', name: 'Video playing (the one with the most time left, if several)' },
 		{ variableId: 'video_elapsed', name: 'Elapsed time of the video (mm:ss)' },
@@ -27,6 +29,15 @@ export function getVariableDefinitions() {
 		{ variableId: 'recording', name: 'Recording the output (true/false)' },
 		{ variableId: 'record_time', name: 'Recording time (mm:ss)' },
 		{ variableId: 'project_type', name: 'Project type (Plan or Timeline)' },
+		{ variableId: 'timeline_name', name: 'Timeline playing (or the first one open)' },
+		{ variableId: 'timeline_progress', name: 'Progress of that timeline (hh:mm:ss.zzz)' },
+		{ variableId: 'timeline_status', name: 'Play status of that timeline (play, pause or stop)' },
+		{ variableId: 'display_status', name: 'Display ends (normal or abnormal)' },
+		{ variableId: 'output_ports_status', name: 'Output ports (normal, or abnormal when one is off)' },
+		{ variableId: 'devices_count', name: 'Machines in the multi-machine setup' },
+		{ variableId: 'devices_problems', name: 'Machines that are not normal, with their state' },
+		{ variableId: 'schedule', name: 'Task management on (true/false)' },
+		{ variableId: 'central_control', name: 'Central control connected (true/false)' },
 	]
 }
 
